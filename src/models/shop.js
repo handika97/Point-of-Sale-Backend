@@ -2,14 +2,17 @@ require("dotenv").config();
 const connection = require("../configs/db");
 
 module.exports = {
-  addShop: (data, id, user) => {
+  addShop: (data, stock) => {
     return new Promise((resolve, reject) => {
       connection.query("INSERT INTO items SET ?", data, (err, result) => {
         if (!err) {
           resolve(result);
           //connection.query('INSERT IGNORE INTO status (id, statusNow, price) VALUES (?,0,0,user) ',[id,user])
-
-          // connection.query("UPDATE status SET price=(SELECT SUM(items.qty*product_nama.price) FROM product_nama INNER JOIN items ON items.id_item = product_nama.id where id_Pembeli=?) WHERE id=? ", id,id)
+          console.log(stock);
+          connection.query("UPDATE product_nama SET stock=? where id=? ", [
+            stock,
+            data.id_item
+          ]);
         } else {
           reject(new Error(err));
         }
@@ -32,15 +35,17 @@ module.exports = {
       );
     });
   },
-  finish: (id_status, id_Pembeli) => {
+  finish: (id_Pembeli, user) => {
     return new Promise((resolve, reject) => {
       connection.query(
-        "UPDATE status SET statusNow=1, price=(SELECT SUM(items.qty*product_nama.price+(10/100*items.qty*product_nama.price)) FROM product_nama INNER JOIN items ON items.id_item = product_nama.id where id_Pembeli=?) WHERE id=? ",
-        [id_Pembeli, id_Pembeli],
+        "UPDATE status SET statusNow=1, price=(SELECT SUM(items.qty*product_nama.price+(10/100*items.qty*product_nama.price)) FROM product_nama INNER JOIN items ON items.id_item = product_nama.id where id_Pembeli=?), user=? WHERE status.id=? ",
+        [id_Pembeli, user, id_Pembeli],
         (err, result) => {
           if (!err) {
             resolve(result);
-            //connection.query("UPDATE product_nama SET stock=(stock-items.qty) FROM product_nama INNER JOIN items ON product_nama.id=items.id_item WHERE items.id_Pembeli=?",id_Pembeli)
+            connection.query(
+              "INSERT IGNORE INTO status (statusNow, price, user) VALUES (0,0,0) "
+            );
           } else {
             reject(new Error(err));
           }
@@ -67,14 +72,6 @@ module.exports = {
   },
   show: (id_Pembeli, id_item, user) => {
     return new Promise((resolve, reject) => {
-      connection.query(
-        "INSERT IGNORE INTO status (id, statusNow, price, user) VALUES (?,0,0,?) ",
-        [id_Pembeli, user]
-      );
-      connection.query(
-        "UPDATE status SET price=(SELECT SUM(items.qty*product_nama.price+(10/100*items.qty*product_nama.price)) FROM product_nama INNER JOIN items ON items.id_item = product_nama.id where id_Pembeli=?) WHERE id=? ",
-        [id_Pembeli, id_Pembeli]
-      );
       connection.query(
         "SELECT  status.price as price, items.id_Pembeli as id, status.statusNow as statusNow, items.id_item as item FROM items INNER JOIN status ON items.id_pembeli=status.id where status.id=? and items.id_item=?",
         [id_Pembeli, id_item],
@@ -184,7 +181,7 @@ module.exports = {
   history_buy: () => {
     return new Promise((resolve, reject) => {
       connection.query(
-        "SELECT MAX(id)+1 as last_id from status where statusNow=1",
+        "SELECT MAX(id) as last_id from status where statusNow=0",
         (err, result) => {
           if (!err) {
             resolve(result);

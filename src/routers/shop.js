@@ -1,9 +1,9 @@
 const express = require("express");
 const Router = express.Router();
 const shopController = require("../controllers/shop");
-Router.post("/:user", shopController.addShop)
+Router.post("/", shopController.addShop)
   // .get("/:id_Pembeli", shopController.showItem)
-  .patch("/", shopController.finish)
+  .patch("/:user", shopController.finish)
   .get("/search/:item", shopController.search)
   .get("/", shopController.record)
   .get("/history", shopController.history)
