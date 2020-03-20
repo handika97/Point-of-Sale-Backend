@@ -29,6 +29,8 @@ module.exports = {
           });
           console.log("yeee");
           shopModel.updateStatus(result[i].id).then(result_1 => {});
+        } else {
+          res.json("Wrong Username or Password");
         }
       }
     });
