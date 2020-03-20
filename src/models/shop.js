@@ -88,10 +88,10 @@ module.exports = {
 
   showStatus: (id_Pembeli, id_item) => {
     return new Promise((resolve, reject) => {
-      connection.query(
-        "UPDATE status SET price=(SELECT SUM(items.qty*product_nama.price+(10/100*items.qty*product_nama.price)) FROM product_nama INNER JOIN items ON items.id_item = product_nama.id where id_Pembeli=?) WHERE id=? ",
-        [id_Pembeli, id_Pembeli]
-      );
+      // connection.query(
+      //   "UPDATE status SET price=(SELECT SUM(items.qty*product_nama.price+(10/100*items.qty*product_nama.price)) FROM product_nama INNER JOIN items ON items.id_item = product_nama.id where id_Pembeli=?) WHERE id=? ",
+      //   [id_Pembeli, id_Pembeli]
+      // );
       connection.query(
         "SELECT * FROM status where id=?",
         id_Pembeli,
@@ -137,7 +137,7 @@ module.exports = {
   record: () => {
     return new Promise((resolve, reject) => {
       connection.query(
-        "SELECT (SELECT SUM(price) FROM status WHERE YEAR(timeFinal)=YEAR(NOW()) and statusNow=1 GROUP BY YEAR(timeFinal)) AS year_omzet, (SELECT sum(price) FROM status WHERE timeFinal=CURDATE() and statusNow=1) as income_today, (SELECT COUNT(id) FROM status WHERE YEARWEEK(timeFinal)=YEARWEEK(NOW()) and statusNow=1 GROUP BY YEARWEEK(timeFinal)) AS order_week,((((SELECT COUNT(id) FROM status WHERE YEARWEEK(timeFinal)=YEARWEEK(NOW()) and statusNow=1 GROUP BY YEARWEEK(timeFinal))-(SELECT COUNT(id) FROM status WHERE YEARWEEK(timeFinal)=(YEARWEEK(NOW())-1) and statusNow=1 GROUP BY YEARWEEK(timeFinal)))/(SELECT COUNT(id) FROM status WHERE YEARWEEK(timeFinal)=(YEARWEEK(NOW())-1) and statusNow=1 GROUP BY YEARWEEK(timeFinal)))*100) as persentaseWeek_order,((((SELECT SUM(price) FROM status WHERE timeFinal=CURDATE() and statusNow=1)-(SELECT SUM(price) FROM status WHERE timeFinal=(CURDATE()-1) and statusNow=1))/(SELECT SUM(price) FROM status WHERE timeFinal=(CURDATE()-1) and statusNow=1))*100) as persentaseDay_omzet",
+        "SELECT (SELECT SUM(price) FROM latian.status WHERE YEAR(timeFinal)=YEAR(NOW()) and statusNow=1 GROUP BY YEAR(timeFinal)) AS year_omzet, (SELECT sum(price) FROM latian.status WHERE date(timeFinal)=CURRENT_DATE() and statusNow=1) as income_today, (SELECT COUNT(id) FROM latian.status WHERE YEARWEEK(timeFinal)=YEARWEEK(NOW()) and statusNow=1 GROUP BY YEARWEEK(timeFinal)) AS order_week,((((SELECT COUNT(id) FROM latian.status WHERE YEARWEEK(timeFinal)=YEARWEEK(NOW()) and statusNow=1 GROUP BY YEARWEEK(timeFinal))-(SELECT COUNT(id) FROM latian.status WHERE YEARWEEK(timeFinal)=(YEARWEEK(NOW())-1) and statusNow=1 GROUP BY YEARWEEK(timeFinal)))/(SELECT COUNT(id) FROM latian.status WHERE YEARWEEK(timeFinal)=(YEARWEEK(NOW())-1) and statusNow=1 GROUP BY YEARWEEK(timeFinal)))*100) as persentaseWeek_order,((((SELECT SUM(price) FROM latian.status WHERE date(timeFinal)=CURRENT_DATE() and statusNow=1)-(SELECT SUM(price) FROM latian.status WHERE date(timeFinal)=(CURRENT_DATE()-1) and statusNow=1))/(SELECT SUM(price) FROM latian.status WHERE date(timeFinal)=(CURRENT_DATE()-1) and statusNow=1))*100) as persentaseDay_omzet",
         (err, result) => {
           if (!err) {
             resolve(result);
